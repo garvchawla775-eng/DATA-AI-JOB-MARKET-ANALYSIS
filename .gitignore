@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE / OS files
+.DS_Store
+.vscode/
+.idea/
+
+# Local temporary files
+*.log
+*.tmp
