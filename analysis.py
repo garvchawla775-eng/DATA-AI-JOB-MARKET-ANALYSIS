@@ -13,10 +13,7 @@ import pandas as pd
 BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "job_market.db"
 SQL_PATH = BASE_DIR / "queries.sql"
-CHARTS_DIR = BASE_DIR / "charts"
 FINDINGS_PATH = BASE_DIR / "FINDINGS.md"
-
-CHARTS_DIR.mkdir(exist_ok=True)
 
 NAVY = "#1F3864"
 ACCENT = "#4472C4"
@@ -53,6 +50,13 @@ def usd_fmt(ax, axis: str = "y") -> None:
         ax.xaxis.set_major_formatter(formatter)
 
 
+def save_chart(filename: str) -> None:
+    """Save a portfolio chart to the repository root."""
+    plt.tight_layout()
+    plt.savefig(BASE_DIR / filename, dpi=150, bbox_inches="tight")
+    plt.close()
+
+
 def main() -> None:
     if not DB_PATH.exists():
         raise FileNotFoundError(
@@ -82,9 +86,7 @@ def main() -> None:
         usd_fmt(ax)
         for i, value in enumerate(df1["avg_salary_usd"]):
             ax.text(i, value + 2000, f"${value:,.0f}", ha="center", fontsize=9)
-        plt.tight_layout()
-        plt.savefig(CHARTS_DIR / "01_avg_salary_by_experience.png", dpi=150)
-        plt.close()
+        save_chart("01_avg_salary_by_experience.png")
         findings += ["## 1. Average salary by experience level\n", df1.to_markdown(index=False) + "\n"]
 
         df2 = run_query(conn, queries[1])
@@ -97,7 +99,7 @@ def main() -> None:
         usd_fmt(ax2)
         ax1.set_title("Data/AI Job Postings & Avg Salary by Year", fontweight="bold", color=NAVY)
         fig.tight_layout()
-        plt.savefig(CHARTS_DIR / "02_yearly_trend.png", dpi=150)
+        plt.savefig(BASE_DIR / "02_yearly_trend.png", dpi=150, bbox_inches="tight")
         plt.close()
         findings += ["## 2. Year-over-year trend\n", df2.to_markdown(index=False) + "\n"]
 
@@ -109,9 +111,7 @@ def main() -> None:
         ax.set_xlabel("Average Salary (USD)")
         ax.xaxis.set_major_locator(mticker.MaxNLocator(6))
         usd_fmt(ax, axis="x")
-        plt.tight_layout()
-        plt.savefig(CHARTS_DIR / "03_top_paying_titles.png", dpi=150)
-        plt.close()
+        save_chart("03_top_paying_titles.png")
         findings += ["## 3. Top 10 highest-paying titles (min. 5 postings)\n", df3.to_markdown(index=False) + "\n"]
 
         df4 = run_query(conn, queries[3])
@@ -125,9 +125,7 @@ def main() -> None:
             text.set_color("white")
             text.set_fontweight("bold")
         ax.set_title("Remote-Work Split (Data/AI Roles)", fontweight="bold", color=NAVY)
-        plt.tight_layout()
-        plt.savefig(CHARTS_DIR / "04_remote_split.png", dpi=150)
-        plt.close()
+        save_chart("04_remote_split.png")
         findings += ["## 4. Remote-work distribution\n", df4.to_markdown(index=False) + "\n"]
 
         df5 = run_query(conn, queries[4])
@@ -136,9 +134,7 @@ def main() -> None:
         ax.set_title("Average Salary by Company Size (Data/AI Roles)", fontweight="bold", color=NAVY)
         ax.set_ylabel("Average Salary (USD)")
         usd_fmt(ax)
-        plt.tight_layout()
-        plt.savefig(CHARTS_DIR / "05_salary_by_company_size.png", dpi=150)
-        plt.close()
+        save_chart("05_salary_by_company_size.png")
         findings += ["## 5. Average salary by company size\n", df5.to_markdown(index=False) + "\n"]
 
         df6 = run_query(conn, queries[5])
@@ -147,14 +143,11 @@ def main() -> None:
         ax.barh(df6_sorted["job_title"], df6_sorted["postings"], color=NAVY)
         ax.set_title("Most Common Data/AI Job Titles by Volume", fontweight="bold", color=NAVY)
         ax.set_xlabel("Postings (n)")
-        plt.tight_layout()
-        plt.savefig(CHARTS_DIR / "06_most_common_titles.png", dpi=150)
-        plt.close()
+        save_chart("06_most_common_titles.png")
         findings += ["## 6. Most common titles by posting volume\n", df6.to_markdown(index=False) + "\n"]
 
     FINDINGS_PATH.write_text("\n".join(findings), encoding="utf-8")
-
-    print("Charts written to:", CHARTS_DIR)
+    print("Portfolio charts written to:", BASE_DIR)
     print("Findings written to:", FINDINGS_PATH)
 
 
